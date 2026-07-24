@@ -1,0 +1,17 @@
+#!/bin/bash
+mkdir -p ~/.cache/clipmenu
+
+HASH_FILE="$HOME/.cache/clipmenu/hash"
+[ ! -f "$HASH_FILE" ] && head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 16 > "$HASH_FILE"
+
+while clipnotify; do 
+    if xclip -o -selection clipboard -t TARGETS 2>/dev/null | grep -qi "image"; then
+        timestamp=$(date +%s%N)
+        xclip -o -selection clipboard -t image/png > ~/.cache/clipmenu/full_${timestamp}.png
+        vips thumbnail ~/.cache/clipmenu/full_${timestamp}.png ~/.cache/clipmenu/thumb_${timestamp}.png 10000 --height 120 2>/dev/null
+    else
+        xclip -o -selection clipboard 2>/dev/null > ~/.cache/clipmenu/$(date +%s%N).txt
+    fi
+    # Keep last 50 files (not hash)
+    ls -t ~/.cache/clipmenu/*.png ~/.cache/clipmenu/*.txt 2>/dev/null | tail -n +51 | xargs rm -f 2>/dev/null
+done

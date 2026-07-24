@@ -1,0 +1,34 @@
+#!/bin/bash
+
+HASH=$(cat "$HOME/.cache/clipmenu/hash")
+
+entries=""
+ls -t ~/.cache/clipmenu/* 2>/dev/null | grep -v hash | while read -r f; do
+    case "$f" in
+        *thumb_*.png) 
+            echo "$HASH$f"
+            ;;
+        *.txt) 
+            printf '%s\n' "$(cat "$f" | sed -z 's/\\/\\\\/g' | sed -z 's/\n/\\n/g')"
+            ;;
+    esac
+done | {
+    cat
+    for i in $(seq 10); do echo " "; done
+} | dmenu -l 10 -p "clip" -is 120 -ip "$HASH" -w "$(xdotool getactivewindow)" | {
+
+read -r sel
+
+[ -z "$sel" ] && exit
+
+if [[ "$sel" == ${HASH}* ]]; then
+    thumb="${sel#$HASH}"
+    full="${thumb/thumb_/full_}"
+    xclip -selection clipboard -t image/png < "$full"
+    rm -f "$thumb" "$full"
+else
+    grep -lx "$sel" ~/.cache/clipmenu/*.txt | xargs rm -f
+    echo -e -n "$sel" | xclip -selection clipboard
+fi
+
+}

@@ -10,8 +10,8 @@ while clipnotify -s clipboard; do
         xclip -o -selection clipboard -t image/png > ~/.cache/clipmenu/full_${timestamp}.png
         vips thumbnail ~/.cache/clipmenu/full_${timestamp}.png ~/.cache/clipmenu/thumb_${timestamp}.png 10000 --height 120 2>/dev/null
     else
-        xclip -o -selection clipboard 2>/dev/null > ~/.cache/clipmenu/$(date +%s%N).txt
+        output=$(xclip -o -selection clipboard 2>/dev/null)
+	echo -n $output > ~/.cache/clipmenu/$(echo -n $output | md5sum | cut -d' ' -f1).txt
     fi
-    # Keep last 50 files (not hash)
     ls -t ~/.cache/clipmenu/*.png ~/.cache/clipmenu/*.txt 2>/dev/null | tail -n +51 | xargs rm -f 2>/dev/null
 done

@@ -5,13 +5,15 @@ HASH_FILE="$HOME/.cache/clipmenu/hash"
 [ ! -f "$HASH_FILE" ] && head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 16 > "$HASH_FILE"
 
 while clipnotify -s clipboard; do 
-    if xclip -o -selection clipboard -t TARGETS 2>/dev/null | grep -qi "image"; then
+    target="$(xclip -o -selection clipboard -t TARGETS 2>/dev/null | grep -i "image/" | head -1)"
+    if [ -n "$target" ]; then
         timestamp=$(date +%s%N)
-        xclip -o -selection clipboard -t image/png > ~/.cache/clipmenu/full_${timestamp}.png
+        xclip -o -selection clipboard -t "$target" > ~/.cache/clipmenu/tmp_image
+	vips copy ~/.cache/clipmenu/tmp_image ~/.cache/clipmenu/full_${timestamp}.png 2>/dev/null
         vips thumbnail ~/.cache/clipmenu/full_${timestamp}.png ~/.cache/clipmenu/thumb_${timestamp}.png 10000 --height 120 2>/dev/null
     else
-        output=$(xclip -o -selection clipboard 2>/dev/null)
-	echo -n $output > ~/.cache/clipmenu/$(echo -n $output | md5sum | cut -d' ' -f1).txt
+        output="$(xclip -o -selection clipboard 2>/dev/null)"
+	echo -n "$output" > ~/.cache/clipmenu/$(echo -n "$output" | md5sum | cut -d' ' -f1).txt
     fi
     ls -t ~/.cache/clipmenu/*.png ~/.cache/clipmenu/*.txt 2>/dev/null | tail -n +51 | xargs rm -f 2>/dev/null
 done

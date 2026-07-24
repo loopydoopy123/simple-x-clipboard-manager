@@ -9,7 +9,7 @@ ls -t ~/.cache/clipmenu/* 2>/dev/null | grep -v hash | while read -r f; do
             echo "$HASH$f"
             ;;
         *.txt) 
-            printf '%s\n' "$(cat "$f" | sed -z 's/\\/\\\\/g' | sed -z 's/\n/\\n/g')"
+            echo "$(cat "$f" | sed -z 's/\\/\\\\/g' | sed -z 's/\n/\\n/g')"
             ;;
     esac
 done | {
@@ -27,7 +27,6 @@ if [[ "$sel" == ${HASH}* ]]; then
     xclip -selection clipboard -t image/png < "$full"
     rm -f "$thumb" "$full"
 else
-    awk -v v="$(echo -e -n "$sel")" 'BEGIN{RS="^$"} $0 == v {print FILENAME}' ~/.cache/clipmenu/*.txt | xargs rm -f
     echo -e -n "$sel" | xclip -selection clipboard
 fi
 

@@ -27,7 +27,7 @@ if [[ "$sel" == ${HASH}* ]]; then
     xclip -selection clipboard -t image/png < "$full"
     rm -f "$thumb" "$full"
 else
-    grep -lx "$sel" ~/.cache/clipmenu/*.txt | xargs rm -f
+    awk -v v="$(echo -e -n "$sel")" 'BEGIN{RS="^$"} $0 == v {print FILENAME}' ~/.cache/clipmenu/*.txt | xargs rm -f
     echo -e -n "$sel" | xclip -selection clipboard
 fi
 

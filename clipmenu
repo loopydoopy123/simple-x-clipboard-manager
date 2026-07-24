@@ -23,8 +23,10 @@ read -r sel
 
 if [[ "$sel" == ${HASH}* ]]; then
     thumb="${sel#$HASH}"
-    full="${thumb/thumb_/full_}"
-    xclip -selection clipboard -t image/png < "$full"
+    base="${thumb/thumb_/full_}"
+    full="$(ls ${base%.*}.*)"
+    ext="${full##*.}"
+    xclip -selection clipboard -t image/"$ext" < "$full"
     rm -f "$thumb" "$full"
 else
     echo -e -n "$sel" | xclip -selection clipboard
